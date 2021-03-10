@@ -40,7 +40,7 @@ public class FareCalculatorServiceTest {
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
         fareCalculatorService.calculateFare(ticket);
-        assertEquals(ticket.getPrice(), Fare.CAR_RATE_PER_HOUR);
+        assertEquals(Fare.CAR_RATE_PER_HOUR, ticket.getPrice());
     }
 
     @Test
@@ -54,11 +54,12 @@ public class FareCalculatorServiceTest {
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
         fareCalculatorService.calculateFare(ticket);
-        assertEquals(ticket.getPrice(), Fare.BIKE_RATE_PER_HOUR);
+        assertEquals(Fare.BIKE_RATE_PER_HOUR, ticket.getPrice());
     }
 
     @Test
-    public void calculateFareUnkownType() {
+    @DisplayName("Exception for unknown type for more than half an hour")
+    public void calculateFareUnknownTypeForOneHour() {
         Date inTime = new Date();
         inTime.setTime(System.currentTimeMillis() - (60 * 60 * 1000));
         Date outTime = new Date();
@@ -71,6 +72,21 @@ public class FareCalculatorServiceTest {
     }
 
     @Test
+    @DisplayName("Exception for unknown type for less than half of hour")
+    public void calculateFareUnknownTypeForLessThanHalfOfHour() {
+        Date inTime = new Date();
+        inTime.setTime(System.currentTimeMillis() - (29 * 60 * 1000));
+        Date outTime = new Date();
+        ParkingSpot parkingSpot = new ParkingSpot(1, null, false);
+
+        ticket.setInTime(inTime);
+        ticket.setOutTime(outTime);
+        ticket.setParkingSpot(parkingSpot);
+        assertThrows(NullPointerException.class, () -> fareCalculatorService.calculateFare(ticket));
+    }
+
+    @Test
+    @DisplayName("Exception for fare bike with future date entrance")
     public void calculateFareBikeWithFutureInTime() {
         Date inTime = new Date();
         inTime.setTime(System.currentTimeMillis() + (60 * 60 * 1000));
@@ -95,7 +111,7 @@ public class FareCalculatorServiceTest {
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
         fareCalculatorService.calculateFare(ticket);
-        assertEquals((0.75 * Fare.BIKE_RATE_PER_HOUR), ticket.getPrice());
+        assertEquals((Math.round(0.75 * Fare.BIKE_RATE_PER_HOUR * 100.0) / 100.0), ticket.getPrice());
     }
 
     @Test
@@ -110,7 +126,7 @@ public class FareCalculatorServiceTest {
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
         fareCalculatorService.calculateFare(ticket);
-        assertEquals((0.75 * Fare.CAR_RATE_PER_HOUR), ticket.getPrice());
+        assertEquals ((Math.round(0.75 * Fare.CAR_RATE_PER_HOUR * 100.0) / 100.0), ticket.getPrice());
     }
 
     @Test
@@ -156,6 +172,39 @@ public class FareCalculatorServiceTest {
         ticket.setParkingSpot(parkingSpot);
         fareCalculatorService.calculateFare(ticket);
         assertEquals((0), ticket.getPrice());
+    }
+
+    @Test
+    @DisplayName("24H of parking car for recurring users")
+    void calculateFareCarForRecurringUsers() {
+        Date inTime = new Date();
+        inTime.setTime(System.currentTimeMillis() - (24 * 60 * 60 * 1000));
+        Date outTime = new Date();
+        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, true);
+
+        ticket.setOutTime(outTime);
+        ticket.setInTime(inTime);
+        ticket.setRecurringUser(true);
+        ticket.setParkingSpot(parkingSpot);
+        fareCalculatorService.calculateFare(ticket);
+
+        assertEquals(34.2, ticket.getPrice());
+    }
+
+    @Test
+    @DisplayName("24H of parking bike for recurring users")
+    void calculateFareBikeForRecurringUsers() {
+        Date inTime = new Date();
+        inTime.setTime(System.currentTimeMillis() - (24 * 60 * 60 * 1000));
+        Date outTime = new Date();
+        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE, true);
+
+        ticket.setOutTime(outTime);
+        ticket.setInTime(inTime);
+        ticket.setRecurringUser(true);
+        ticket.setParkingSpot(parkingSpot);
+        fareCalculatorService.calculateFare(ticket);
+        assertEquals(22.8, ticket.getPrice());
     }
 
 }
