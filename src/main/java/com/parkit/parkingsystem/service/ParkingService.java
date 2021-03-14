@@ -34,7 +34,7 @@ public class ParkingService {
                 String vehicleRegNumber = getVehicleRegNumber();
                 boolean isRecurringUser = ticketDAO.isRecurringUser(vehicleRegNumber);
                 if (isRecurringUser) {
-                    System.out.println( "\n" + "Welcome back! As a recurring user of our parking lot, you'll benefit from a 5% discount !" + "\n");
+                    System.out.println("\n" + "Welcome back! As a recurring user of our parking lot, you'll benefit from a 5% discount !" + "\n");
                 }
                 parkingSpot.setAvailable(false);
                 parkingSpotDAO.updateParking(parkingSpot);//allot this parking space and mark it's availability as false
