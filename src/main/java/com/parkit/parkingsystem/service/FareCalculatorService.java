@@ -38,7 +38,7 @@ public class FareCalculatorService {
                     break;
                 }
                 default:
-                throw new IllegalArgumentException("Unkown Parking Type");
+                throw new IllegalArgumentException("Unknown Parking Type");
             }
             double price = duration * rate * discount;
             price = toRoundPrice(price);
@@ -51,7 +51,7 @@ public class FareCalculatorService {
                     break;
                 }
                 default:
-                    throw new IllegalArgumentException("Unkown Parking Type");
+                    throw new IllegalArgumentException("Unknown Parking Type");
             }
         }
     }
