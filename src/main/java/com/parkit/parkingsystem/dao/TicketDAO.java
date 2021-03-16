@@ -16,15 +16,22 @@ import java.sql.Timestamp;
 
 public class TicketDAO {
 
-    private static final Logger logger = LogManager.getLogger("TicketDAO");
+    private static final Logger LOGGER = LogManager.getLogger("TicketDAO");
 
     public DataBaseConfig dataBaseConfig = new DataBaseConfig();
 
+    /**
+     * Save data from ticket
+     *
+     * @param ticket ticket save in database
+     * @return true if save was successful
+     */
     public boolean saveTicket(Ticket ticket) {
         Connection con = null;
+        PreparedStatement ps = null;
         try {
             con = dataBaseConfig.getConnection();
-            PreparedStatement ps = con.prepareStatement(DBConstants.SAVE_TICKET);
+            ps = con.prepareStatement(DBConstants.SAVE_TICKET);
             //ID, PARKING_NUMBER, VEHICLE_REG_NUMBER, PRICE, IN_TIME, OUT_TIME, RECURRING_USERS)
             ps.setInt(1, ticket.getParkingSpot().getId());
             ps.setString(2, ticket.getVehicleRegNumber());
@@ -34,13 +41,20 @@ public class TicketDAO {
             ps.setBoolean(6, ticket.isRecurringUser());
             return ps.execute();
         } catch (Exception ex) {
-            logger.error("Error while registering the ticket", ex);
+            LOGGER.error("Error while registering the ticket", ex);
         } finally {
+            dataBaseConfig.closePreparedStatement(ps);
             dataBaseConfig.closeConnection(con);
-            return false;
         }
+        return false;
     }
 
+    /**
+     * Get data of ticket
+     *
+     * @param vehicleRegNumber vehicle reg number
+     * @return ticket with data
+     */
     public Ticket getTicket(String vehicleRegNumber) {
         Connection con = null;
         Ticket ticket = null;
@@ -64,47 +78,60 @@ public class TicketDAO {
             dataBaseConfig.closeResultSet(rs);
             dataBaseConfig.closePreparedStatement(ps);
         } catch (Exception ex) {
-            logger.error("Error fetching next available slot", ex);
+            LOGGER.error("Error fetching next available slot", ex);
         } finally {
             dataBaseConfig.closeConnection(con);
-            return ticket;
         }
+        return ticket;
     }
 
+    /**
+     * @param ticket update data into ticket
+     * @return true if update is successful
+     */
     public boolean updateTicket(Ticket ticket) {
         Connection con = null;
+        PreparedStatement ps = null;
         try {
             con = dataBaseConfig.getConnection();
-            PreparedStatement ps = con.prepareStatement(DBConstants.UPDATE_TICKET);
+            ps = con.prepareStatement(DBConstants.UPDATE_TICKET);
             ps.setDouble(1, ticket.getPrice());
             ps.setTimestamp(2, new Timestamp(ticket.getOutTime().getTime()));
             ps.setInt(3, ticket.getId());
             ps.execute();
-//            dataBaseConfig.closePreparedStatement(ps);
             return true;
         } catch (Exception ex) {
-            logger.error("Error saving ticket info", ex);
+            LOGGER.error("Error saving ticket info", ex);
         } finally {
+            dataBaseConfig.closePreparedStatement(ps);
             dataBaseConfig.closeConnection(con);
         }
         return false;
     }
 
+    /**
+     * Check if vehicle reg number exist in database to set reduction
+     *
+     * @param vehicleRegNumber vehicle reg number
+     * @return true if vehicle reg number is recurring user
+     */
     public boolean isRecurringUser(String vehicleRegNumber) {
         Connection con = null;
+        PreparedStatement ps = null;
         try {
             con = dataBaseConfig.getConnection();
-            PreparedStatement ps = con.prepareStatement(DBConstants.GET_RECURRING_USERS);
+            ps = con.prepareStatement(DBConstants.GET_RECURRING_USERS);
             ps.setString(1, vehicleRegNumber);
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
+            while (rs.next()) {
                 if (rs.getInt(1) >= Fare.MINIMUM_NB_OF_RECURRENCE_FOR_RECURRING_USERS) {
                     return true;
                 }
             }
         } catch (Exception ex) {
-            logger.error("Error saving ticket info", ex);
+            LOGGER.error("Error saving ticket info", ex);
         } finally {
+            dataBaseConfig.closePreparedStatement(ps);
             dataBaseConfig.closeConnection(con);
         }
         return false;
