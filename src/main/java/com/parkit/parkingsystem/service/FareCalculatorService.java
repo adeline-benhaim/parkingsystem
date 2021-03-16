@@ -6,6 +6,9 @@ import com.parkit.parkingsystem.model.Ticket;
 
 public class FareCalculatorService {
 
+    /**
+     * @param ticket ticket from which the fare is calculated based on duration and discount
+     */
     public void calculateFare(Ticket ticket) {
         if ((ticket.getOutTime() == null) || (ticket.getOutTime().before(ticket.getInTime()))) {
             assert ticket.getOutTime() != null;
@@ -25,20 +28,18 @@ public class FareCalculatorService {
         }
 
         ParkingType parkingType = ticket.getParkingSpot().getParkingType();
-
-        if (duration >= 0.5) {
+        final double halfHour = 0.5;
+        if (duration >= halfHour) {
             double rate;
             switch (parkingType) {
-                case CAR: {
+                case CAR:
                     rate = Fare.CAR_RATE_PER_HOUR;
                     break;
-                }
-                case BIKE: {
+                case BIKE:
                     rate = Fare.BIKE_RATE_PER_HOUR;
                     break;
-                }
                 default:
-                throw new IllegalArgumentException("Unknown Parking Type");
+                    throw new IllegalArgumentException("Unknown Parking Type");
             }
             double price = duration * rate * discount;
             price = toRoundPrice(price);
@@ -46,16 +47,19 @@ public class FareCalculatorService {
         } else {
             switch (parkingType) {
                 case CAR:
-                case BIKE: {
+                case BIKE:
                     ticket.setPrice(0);
                     break;
-                }
                 default:
                     throw new IllegalArgumentException("Unknown Parking Type");
             }
         }
     }
 
+    /**
+     * @param price of ticket
+     * @return the price rounded to two digits after the decimal point
+     */
     public double toRoundPrice(double price) {
         return Math.round(price * 100.0) / 100.0;
     }

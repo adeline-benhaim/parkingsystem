@@ -13,13 +13,13 @@ import java.util.Date;
 
 public class ParkingService {
 
-    private static final Logger logger = LogManager.getLogger("ParkingService");
+    private static final Logger LOGGER = LogManager.getLogger("ParkingService");
 
-    private static FareCalculatorService fareCalculatorService = new FareCalculatorService();
+    private static final FareCalculatorService fareCalculatorService = new FareCalculatorService();
 
-    private InputReaderUtil inputReaderUtil;
-    private ParkingSpotDAO parkingSpotDAO;
-    private TicketDAO ticketDAO;
+    private final InputReaderUtil inputReaderUtil;
+    private final ParkingSpotDAO parkingSpotDAO;
+    private final TicketDAO ticketDAO;
 
     public ParkingService(InputReaderUtil inputReaderUtil, ParkingSpotDAO parkingSpotDAO, TicketDAO ticketDAO) {
         this.inputReaderUtil = inputReaderUtil;
@@ -27,6 +27,9 @@ public class ParkingService {
         this.ticketDAO = ticketDAO;
     }
 
+    /**
+     * Entry of a vehicle into the parking lot
+     */
     public void processIncomingVehicle() {
         try {
             ParkingSpot parkingSpot = getNextParkingNumberIfAvailable();
@@ -55,7 +58,7 @@ public class ParkingService {
                 System.out.println("Recorded in-time for vehicle number:" + vehicleRegNumber + " is:" + inTime);
             }
         } catch (Exception e) {
-            logger.error("Unable to process incoming vehicle", e);
+            LOGGER.error("Unable to process incoming vehicle", e);
         }
     }
 
@@ -64,6 +67,9 @@ public class ParkingService {
         return inputReaderUtil.readVehicleRegistrationNumber();
     }
 
+    /**
+     * @return data of parking spot
+     */
     public ParkingSpot getNextParkingNumberIfAvailable() {
         int parkingNumber;
         ParkingSpot parkingSpot = null;
@@ -76,9 +82,9 @@ public class ParkingService {
                 throw new Exception("Error fetching parking number from DB. Parking slots might be full");
             }
         } catch (IllegalArgumentException ie) {
-            logger.error("Error parsing user input for type of vehicle", ie);
+            LOGGER.error("Error parsing user input for type of vehicle", ie);
         } catch (Exception e) {
-            logger.error("Error fetching next available parking slot", e);
+            LOGGER.error("Error fetching next available parking slot", e);
         }
         return parkingSpot;
     }
@@ -102,6 +108,9 @@ public class ParkingService {
         }
     }
 
+    /**
+     * Exit of a vehicle from the parking
+     */
     public void processExitingVehicle() {
         try {
             String vehicleRegNumber = getVehicleRegNumber();
@@ -119,7 +128,7 @@ public class ParkingService {
                 System.out.println("Unable to update ticket information. Error occurred");
             }
         } catch (Exception e) {
-            logger.error("Unable to process exiting vehicle", e);
+            LOGGER.error("Unable to process exiting vehicle", e);
         }
     }
 }
